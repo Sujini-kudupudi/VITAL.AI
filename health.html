@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitalAI — Health Risk Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #0f7c6a;
+    --teal-light: #e0f5f0;
+    --teal-mid: #1db899;
+    --teal-dark: #085041;
+    --coral: #d85a30;
+    --coral-light: #faece7;
+    --amber: #ba7517;
+    --amber-light: #faeeda;
+    --red: #e24b4a;
+    --red-light: #fcebeb;
+    --green: #3b6d11;
+    --green-light: #eaf3de;
+    --bg: #f6faf9;
+    --bg-card: #ffffff;
+    --text: #1a2e2b;
+    --text-mid: #3d5a55;
+    --text-soft: #7a9490;
+    --border: #d0e8e3;
+    --shadow: 0 2px 20px rgba(15,124,106,0.08);
+    --shadow-hover: 0 8px 40px rgba(15,124,106,0.15);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--teal);
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--coral); }
+
+  .nav-links { display: flex; gap: 0.5rem; align-items: center; }
+
+  .nav-btn {
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .nav-btn.ghost {
+    color: var(--text-mid);
+    border-color: var(--border);
+    background: transparent;
+  }
+
+  .nav-btn.ghost:hover { background: var(--bg); }
+
+  .nav-btn.solid {
+    background: var(--teal);
+    color: #fff;
+    border-color: var(--teal);
+  }
+
+  .nav-btn.solid:hover { background: var(--teal-dark); }
+
+  .nav-user {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--teal-light);
+    color: var(--teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .user-name { font-size: 14px; font-weight: 500; color: var(--text); }
+
+  .logout-btn {
+    background: none;
+    border: none;
+    color: var(--text-soft);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .logout-btn:hover { background: var(--red-light); color: var(--red); }
+
+  /* ── PAGES ── */
+  .page { display: none; animation: fadeIn 0.35s ease; }
+  .page.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── LANDING ── */
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 2rem 60px;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: var(--teal-light);
+    color: var(--teal);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 50px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--teal); }
+
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--text-mid);
+    max-width: 560px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+  }
+
+  .hero-cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+  .cta-btn {
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.25s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .cta-btn.primary { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .cta-btn.primary:hover { background: var(--teal-dark); box-shadow: 0 4px 20px rgba(15,124,106,0.35); transform: translateY(-1px); }
+
+  .cta-btn.outline { background: #fff; color: var(--teal); border-color: var(--teal); }
+  .cta-btn.outline:hover { background: var(--teal-light); }
+
+  /* features grid */
+  .features {
+    max-width: 1000px;
+    margin: 0 auto 80px;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .feature-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: box-shadow 0.2s;
+  }
+
+  .feature-card:hover { box-shadow: var(--shadow-hover); }
+
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 22px;
+  }
+
+  .feature-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .feature-card p { font-size: 0.88rem; color: var(--text-soft); line-height: 1.6; }
+
+  /* stats row */
+  .stats {
+    background: var(--teal);
+    color: #fff;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-bottom: 80px;
+  }
+
+  .stats-grid {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item { }
+  .stat-num { font-family: 'Fraunces', serif; font-size: 2.5rem; font-weight: 600; display: block; }
+  .stat-lbl { font-size: 0.85rem; opacity: 0.8; margin-top: 4px; }
+
+  /* ── AUTH (LOGIN / REGISTER) ── */
+  .auth-wrap {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--teal-light) 0%, #f6faf9 60%);
+  }
+
+  .auth-card {
+    background: #fff;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow);
+  }
+
+  .auth-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--teal);
+    text-align: center;
+    margin-bottom: 0.25rem;
+  }
+
+  .auth-logo span { color: var(--coral); }
+
+  .auth-sub {
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.88rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .auth-tabs {
+    display: flex;
+    background: var(--bg);
+    border-radius: 50px;
+    padding: 4px;
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-tab {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    color: var(--text-soft);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .auth-tab.active { background: #fff; color: var(--teal); box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
+
+  .form-group { margin-bottom: 1rem; }
+
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-mid);
+    margin-bottom: 6px;
+  }
+
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: #fff;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(15,124,106,0.1);
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+  }
+
+  .submit-btn:hover { background: var(--teal-dark); transform: translateY(-1px); }
+  .submit-btn:active { transform: translateY(0); }
+
+  .auth-divider {
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 12px;
+    margin: 1rem 0;
+    position: relative;
+  }
+
+  .auth-divider::before, .auth-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 38%;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .auth-divider::before { left: 0; }
+  .auth-divider::after { right: 0; }
+
+  .social-btn {
+    width: 100%;
+    padding: 11px;
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    background: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .social-btn:hover { background: var(--bg); }
+
+  .error-msg {
+    background: var(--red-light);
+    color: var(--red);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  /* ── DASHBOARD ── */
+  .dashboard {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .dash-header {
+    margin-bottom: 2rem;
+  }
+
+  .dash-header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.25rem;
+  }
+
+  .dash-header p { color: var(--text-soft); font-size: 0.9rem; }
+
+  .dash-tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    padding-bottom: 0;
+  }
+
+  .dash-tab {
+    padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-soft);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .dash-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .dash-tab:hover:not(.active) { color: var(--text); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+  /* ── RISK PREDICTOR ── */
+  .predict-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .predict-grid { grid-template-columns: 1fr; }
+  }
+
+  .predict-form-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .range-group { margin-bottom: 1rem; }
+
+  .range-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-mid);
+    margin-bottom: 6px;
+  }
+
+  .range-val {
+    background: var(--teal-light);
+    color: var(--teal);
+    padding: 1px 8px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .range-group input[type=range] {
+    width: 100%;
+    accent-color: var(--teal);
+    height: 6px;
+    cursor: pointer;
+  }
+
+  .checkbox-group { margin-bottom: 1rem; }
+
+  .checkbox-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-mid);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+    background: #fff;
+  }
+
+  .check-item:hover { border-color: var(--teal); background: var(--teal-light); }
+
+  .check-item input[type=checkbox] { accent-color: var(--teal); cursor: pointer; }
+
+  .check-item.checked { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); font-weight: 500; }
+
+  .predict-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 1rem;
+  }
+
+  .predict-btn:hover { background: var(--teal-dark); transform: translateY(-1px); }
+
+  /* result panel */
+  .result-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .risk-meter-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    text-align: center;
+  }
+
+  .risk-label { font-size: 0.85rem; color: var(--text-soft); margin-bottom: 0.5rem; }
+
+  .risk-score {
+    font-family: 'Fraunces', serif;
+    font-size: 4rem;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .risk-tag {
+    display: inline-block;
+    padding: 5px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .risk-bar-wrap {
+    background: var(--bg);
+    border-radius: 50px;
+    height: 10px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+
+  .risk-bar {
+    height: 100%;
+    border-radius: 50px;
+    transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 0;
+  }
+
+  .risk-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-soft);
+  }
+
+  .factor-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .factor-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 1rem; }
+
+  .factor-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+  }
+
+  .factor-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .consult-card {
+    background: var(--teal-light);
+    border: 1px solid var(--teal);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .consult-card h4 { font-weight: 600; color: var(--teal-dark); margin-bottom: 0.5rem; }
+  .consult-card p { font-size: 13px; color: var(--text-mid); margin-bottom: 1rem; }
+
+  .consult-link {
+    display: inline-block;
+    background: var(--teal);
+    color: #fff;
+    padding: 9px 20px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+
+  .consult-link:hover { background: var(--teal-dark); }
+
+  /* ── DOCTORS ── */
+  .doctors-search {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .search-input-wrap {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  .doctors-search input {
+    width: 100%;
+    padding: 11px 14px 11px 38px;
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    transition: border-color 0.2s;
+    color: var(--text);
+  }
+
+  .doctors-search input:focus { border-color: var(--teal); }
+
+  .doctors-search select {
+    padding: 11px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    cursor: pointer;
+    color: var(--text);
+    transition: border-color 0.2s;
+  }
+
+  .doctors-search select:focus { border-color: var(--teal); }
+
+  .doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .doctor-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .doctor-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+
+  .doctor-top { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; }
+
+  .doctor-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .doctor-info h3 { font-size: 1rem; font-weight: 600; margin-bottom: 2px; }
+  .doctor-info .specialty { font-size: 12px; color: var(--teal); font-weight: 600; background: var(--teal-light); padding: 3px 10px; border-radius: 50px; display: inline-block; }
+
+  .doctor-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1rem;
+  }
+
+  .meta-chip {
+    font-size: 12px;
+    color: var(--text-soft);
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .stars { color: #f5a623; font-size: 12px; }
+
+  .doctor-actions { display: flex; gap: 0.75rem; }
+
+  .book-btn {
+    flex: 1;
+    padding: 10px;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .book-btn:hover { background: var(--teal-dark); }
+
+  .msg-btn {
+    padding: 10px 14px;
+    background: #fff;
+    color: var(--teal);
+    border: 1.5px solid var(--teal);
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .msg-btn:hover { background: var(--teal-light); }
+
+  .available-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 50px;
+  }
+
+  .available-badge.online { background: #eaf3de; color: #3b6d11; }
+  .available-badge.busy { background: var(--amber-light); color: var(--amber); }
+
+  /* ── MY APPOINTMENTS ── */
+  .appointments-list { display: flex; flex-direction: column; gap: 1rem; }
+
+  .appt-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: box-shadow 0.2s;
+  }
+
+  .appt-card:hover { box-shadow: var(--shadow); }
+
+  .appt-date {
+    text-align: center;
+    background: var(--teal-light);
+    border-radius: 12px;
+    padding: 10px 16px;
+    min-width: 64px;
+  }
+
+  .appt-date .month { font-size: 11px; color: var(--teal); font-weight: 600; text-transform: uppercase; }
+  .appt-date .day { font-family: 'Fraunces', serif; font-size: 1.8rem; font-weight: 600; color: var(--teal-dark); line-height: 1; }
+
+  .appt-info { flex: 1; }
+  .appt-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .appt-info p { font-size: 13px; color: var(--text-soft); }
+
+  .appt-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 50px;
+  }
+
+  .status-upcoming { background: var(--teal-light); color: var(--teal); }
+  .status-completed { background: var(--green-light); color: var(--green); }
+  .status-cancelled { background: var(--red-light); color: var(--red); }
+
+  /* ── HISTORY ── */
+  .history-table {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .history-table table { width: 100%; border-collapse: collapse; }
+
+  .history-table th {
+    background: var(--bg);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-soft);
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .history-table td {
+    padding: 13px 16px;
+    font-size: 13.5px;
+    border-bottom: 1px solid #f0f5f4;
+    vertical-align: middle;
+  }
+
+  .history-table tr:last-child td { border-bottom: none; }
+  .history-table tr:hover td { background: #f8fbfa; }
+
+  /* modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+    animation: fadeIn 0.3s ease;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--bg);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-soft);
+    transition: background 0.2s;
+  }
+
+  .modal-close:hover { background: var(--border); }
+
+  .modal h3 { font-family: 'Fraunces', serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 0.25rem; }
+  .modal .modal-sub { font-size: 13px; color: var(--text-soft); margin-bottom: 1.5rem; }
+
+  .time-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+
+  .time-slot {
+    padding: 9px;
+    text-align: center;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fff;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+  }
+
+  .time-slot:hover { border-color: var(--teal); background: var(--teal-light); color: var(--teal); }
+  .time-slot.selected { border-color: var(--teal); background: var(--teal); color: #fff; font-weight: 600; }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--teal-dark);
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    display: none;
+    animation: slideUp 0.3s ease;
+    max-width: 320px;
+    line-height: 1.4;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* empty state */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-soft);
+  }
+
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty-state h3 { font-weight: 600; color: var(--text-mid); margin-bottom: 0.5rem; }
+  .empty-state p { font-size: 0.875rem; }
+
+  /* profile card */
+  .profile-grid { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; align-items: start; }
+
+  @media (max-width: 640px) { .profile-grid { grid-template-columns: 1fr; } }
+
+  .profile-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    text-align: center;
+  }
+
+  .profile-avatar-big {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--teal-light);
+    color: var(--teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0 auto 1rem;
+  }
+
+  .profile-name { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 600; margin-bottom: 4px; }
+  .profile-email { font-size: 13px; color: var(--text-soft); margin-bottom: 1rem; }
+  .profile-badge { display: inline-block; background: var(--teal-light); color: var(--teal); font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 50px; }
+
+  .profile-details {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .lbl { color: var(--text-soft); font-size: 13px; }
+  .detail-row .val { font-weight: 500; }
+
+  /* responsive */
+  @media (max-width: 600px) {
+    .hero { padding: 50px 1rem 40px; }
+    .form-row { grid-template-columns: 1fr; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+    .predict-grid { grid-template-columns: 1fr; }
+    nav { padding: 0 1rem; }
+    .dashboard { padding: 1rem; }
+    .auth-card { padding: 1.5rem; }
+    .doctors-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Vital<span>AI</span></div>
+  <div class="nav-links" id="navGuest">
+    <button class="nav-btn ghost" onclick="showPage('login')">Sign in</button>
+    <button class="nav-btn solid" onclick="showPage('login')">Get started</button>
+  </div>
+  <div class="nav-user" id="navUser">
+    <div class="user-avatar" id="navAvatar">?</div>
+    <span class="user-name" id="navUserName">User</span>
+    <button class="logout-btn" onclick="logout()">Sign out</button>
+  </div>
+</nav>
+
+<!-- ─────────────────────── LANDING PAGE ─────────────────────── -->
+<div class="page active" id="page-landing">
+  <div class="hero">
+    <div class="hero-badge">🩺 AI-Powered Health Intelligence</div>
+    <h1>Know your health risks <em>before</em> they know you</h1>
+    <p>VitalAI uses advanced machine learning to predict your personal health risks and connects you instantly with the right specialist.</p>
+    <div class="hero-cta">
+      <button class="cta-btn primary" onclick="showPage('login')">Start free assessment →</button>
+      <button class="cta-btn outline" onclick="showPage('login')">Connect with a doctor</button>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#e0f5f0;">🧠</div>
+      <h3>AI Risk Prediction</h3>
+      <p>Our model analyses 20+ biomarkers and lifestyle factors to deliver a personalised risk score in seconds.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#faece7;">🩻</div>
+      <h3>Specialist Matching</h3>
+      <p>Instantly matched to the right specialist based on your risk profile, location, and availability.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#faeeda;">📅</div>
+      <h3>Seamless Booking</h3>
+      <p>Book in-person or video consultations directly — no waiting lists, no phone queues.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#eaf3de;">📊</div>
+      <h3>Health Timeline</h3>
+      <p>Track your risk scores over time and see how lifestyle changes improve your outlook.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#e0f5f0;">🔒</div>
+      <h3>100% Secure & Private</h3>
+      <p>Your health data is encrypted, HIPAA-compliant, and never sold to third parties.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#fcebeb;">💊</div>
+      <h3>Medication Insights</h3>
+      <p>Understand interactions and get evidence-based supplement recommendations tailored to you.</p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-num">94%</span>
+        <div class="stat-lbl">Prediction accuracy</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">1,200+</span>
+        <div class="stat-lbl">Specialist doctors</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">50k+</span>
+        <div class="stat-lbl">Assessments done</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">4.9★</span>
+        <div class="stat-lbl">Patient rating</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── LOGIN / REGISTER ─────────────────────── -->
+<div class="page" id="page-login">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">Vital<span>AI</span></div>
+      <div class="auth-sub">Your personal health risk intelligence</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Sign in</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Create account</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginForm">
+        <div class="error-msg" id="loginError">Invalid email or password. Please try again.</div>
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password">
+        </div>
+        <button class="submit-btn" onclick="login()">Sign in to VitalAI</button>
+        <div class="auth-divider">or continue with</div>
+        <button class="social-btn" onclick="googleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerForm" style="display:none;">
+        <div class="error-msg" id="registerError">Please fill in all fields.</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>First name</label>
+            <input type="text" id="regFirst" placeholder="Priya">
+          </div>
+          <div class="form-group">
+            <label>Last name</label>
+            <input type="text" id="regLast" placeholder="Sharma">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" id="regEmail" placeholder="you@example.com">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date of birth</label>
+            <input type="date" id="regDob">
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="regGender">
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Non-binary</option>
+              <option>Prefer not to say</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="regPassword" placeholder="Minimum 8 characters">
+        </div>
+        <button class="submit-btn" onclick="register()">Create my account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── DASHBOARD ─────────────────────── -->
+<div class="page" id="page-dashboard">
+  <div class="dashboard">
+    <div class="dash-header">
+      <h1>Good morning, <span id="dashName">User</span> 👋</h1>
+      <p>Here's your health overview for today</p>
+    </div>
+
+    <div class="dash-tabs">
+      <button class="dash-tab active" onclick="switchDashTab('predict', this)">🔬 Risk Assessment</button>
+      <button class="dash-tab" onclick="switchDashTab('doctors', this)">👨‍⚕️ Find Doctors</button>
+      <button class="dash-tab" onclick="switchDashTab('appointments', this)">📅 Appointments</button>
+      <button class="dash-tab" onclick="switchDashTab('history', this)">📊 Health History</button>
+      <button class="dash-tab" onclick="switchDashTab('profile', this)">⚙️ Profile</button>
+    </div>
+
+    <!-- RISK ASSESSMENT TAB -->
+    <div class="tab-panel active" id="tab-predict">
+      <div class="predict-grid">
+        <div class="predict-form-card">
+          <div class="section-title">❤️ Cardiovascular Factors</div>
+
+          <div class="range-group">
+            <label>Age <span class="range-val" id="v-age">35</span></label>
+            <input type="range" min="18" max="90" value="35" oninput="document.getElementById('v-age').textContent=this.value">
+          </div>
+          <div class="range-group">
+            <label>Systolic BP (mmHg) <span class="range-val" id="v-bp">120</span></label>
+            <input type="range" min="90" max="200" value="120" oninput="document.getElementById('v-bp').textContent=this.value">
+          </div>
+          <div class="range-group">
+            <label>BMI <span class="range-val" id="v-bmi">22</span></label>
+            <input type="range" min="15" max="45" value="22" oninput="document.getElementById('v-bmi').textContent=this.value">
+          </div>
+          <div class="range-group">
+            <label>Cholesterol (mg/dL) <span class="range-val" id="v-chol">180</span></label>
+            <input type="range" min="100" max="350" value="180" oninput="document.getElementById('v-chol').textContent=this.value">
+          </div>
+          <div class="range-group">
+            <label>Blood Glucose (mg/dL) <span class="range-val" id="v-glucose">90</span></label>
+            <input type="range" min="60" max="300" value="90" oninput="document.getElementById('v-glucose').textContent=this.value">
+          </div>
+
+          <div class="section-title" style="margin-top:1.5rem;">🏃 Lifestyle Factors</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Gender</label>
+              <select id="p-gender">
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Exercise (days/wk)</label>
+              <select id="p-exercise">
+                <option value="0">None</option>
+                <option value="1">1–2 days</option>
+                <option value="3">3–4 days</option>
+                <option value="5">5+ days</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="checkbox-group">
+            <label>Existing conditions / risk factors</label>
+            <div class="checkbox-grid">
+              <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cond" value="smoking"> 🚬 Smoker</label>
+              <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cond" value="diabetes"> 🩸 Diabetes</label>
+              <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cond" value="hypertension"> 💊 Hypertension</label>
+              <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cond" value="family_heart"> ❤️ Family heart disease</label>
+              <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cond" value="obesity"> ⚖️ Obesity</label>
+              <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cond" value="stress"> 😓 High stress</label>
+              <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cond" value="sleep"> 😴 Poor sleep</label>
+              <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cond" value="alcohol"> 🍺 Heavy alcohol</label>
+            </div>
+          </div>
+
+          <button class="predict-btn" onclick="runPrediction()">🔬 Analyse My Health Risk</button>
+        </div>
+
+        <!-- RESULTS PANEL -->
+        <div class="result-panel">
+          <div class="risk-meter-card" id="resultCard">
+            <div class="risk-label">Your Current Risk Score</div>
+            <div class="risk-score" id="riskScore" style="color:var(--teal);">—</div>
+            <div class="risk-tag" id="riskTag" style="background:var(--teal-light);color:var(--teal);">Run assessment</div>
+            <div style="margin-top:1.25rem;">
+              <div class="risk-bar-wrap">
+                <div class="risk-bar" id="riskBar"></div>
+              </div>
+              <div class="risk-bar-labels"><span>Low</span><span>Moderate</span><span>High</span></div>
+            </div>
+            <div style="font-size:12px;color:var(--text-soft);margin-top:1rem;">Score calculated from your inputs using our AI model</div>
+          </div>
+
+          <div class="factor-card" id="factorCard" style="display:none;">
+            <div class="section-title">⚠️ Key Risk Factors</div>
+            <ul class="factor-list" id="factorList"></ul>
+          </div>
+
+          <div class="consult-card" id="consultCard" style="display:none;">
+            <h4>🩺 Ready to speak to a doctor?</h4>
+            <p>Based on your risk profile, we recommend a consultation with a specialist within the next 30 days.</p>
+            <button class="consult-link" onclick="switchDashTab('doctors', document.querySelector('.dash-tab:nth-child(2)'))">Browse available doctors →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCTORS TAB -->
+    <div class="tab-panel" id="tab-doctors">
+      <div class="doctors-search">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="doctorSearch" placeholder="Search by name or specialty…" oninput="filterDoctors()">
+        </div>
+        <select id="specialtyFilter" onchange="filterDoctors()">
+          <option value="">All specialties</option>
+          <option>Cardiologist</option>
+          <option>Diabetologist</option>
+          <option>General Physician</option>
+          <option>Neurologist</option>
+          <option>Pulmonologist</option>
+          <option>Nutritionist</option>
+        </select>
+        <select id="availFilter" onchange="filterDoctors()">
+          <option value="">All availability</option>
+          <option value="online">Available now</option>
+          <option value="busy">Busy</option>
+        </select>
+      </div>
+
+      <div class="doctors-grid" id="doctorsGrid"></div>
+    </div>
+
+    <!-- APPOINTMENTS TAB -->
+    <div class="tab-panel" id="tab-appointments">
+      <div id="appointmentsContainer"></div>
+    </div>
+
+    <!-- HEALTH HISTORY TAB -->
+    <div class="tab-panel" id="tab-history">
+      <div id="historyContainer"></div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div class="tab-panel" id="tab-profile">
+      <div class="profile-grid">
+        <div class="profile-card">
+          <div class="profile-avatar-big" id="profileAvatar">?</div>
+          <div class="profile-name" id="profileName">—</div>
+          <div class="profile-email" id="profileEmail">—</div>
+          <div class="profile-badge">Patient</div>
+        </div>
+        <div class="profile-details">
+          <div class="section-title">Account Details</div>
+          <div class="detail-row"><span class="lbl">Full name</span><span class="val" id="detailName">—</span></div>
+          <div class="detail-row"><span class="lbl">Email</span><span class="val" id="detailEmail">—</span></div>
+          <div class="detail-row"><span class="lbl">Date of birth</span><span class="val" id="detailDob">—</span></div>
+          <div class="detail-row"><span class="lbl">Gender</span><span class="val" id="detailGender">—</span></div>
+          <div class="detail-row"><span class="lbl">Member since</span><span class="val">April 2025</span></div>
+          <div class="detail-row"><span class="lbl">Assessments done</span><span class="val" id="detailAssessments">0</span></div>
+          <div class="detail-row"><span class="lbl">Appointments booked</span><span class="val" id="detailAppts">0</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>Book Appointment</h3>
+    <p class="modal-sub" id="modalDoctorName">with Dr. —</p>
+
+    <div class="form-group">
+      <label>Select date</label>
+      <input type="date" id="bookDate">
+    </div>
+
+    <div class="form-group">
+      <label>Select time slot</label>
+      <div class="time-slots" id="timeSlots"></div>
+    </div>
+
+    <div class="form-group">
+      <label>Consultation type</label>
+      <select id="consultType">
+        <option value="video">📹 Video call</option>
+        <option value="inperson">🏥 In-person visit</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Reason for visit</label>
+      <input type="text" id="visitReason" placeholder="Brief description of your concern">
+    </div>
+
+    <button class="submit-btn" onclick="confirmBooking()">Confirm Booking</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────
+let currentUser = null;
+let appointments = [];
+let healthHistory = [];
+let assessmentCount = 0;
+let selectedDoctor = null;
+let selectedTime = null;
+
+// ── DOCTORS DATA ──────────────────────────────────────────────────
+const doctors = [
+  { id:1, name:'Dr. Ananya Krishnan', specialty:'Cardiologist', exp:'14 yrs', rating:'4.9', patients:820, available:'online', color:'#0f7c6a', loc:'Hyderabad', fee:'₹800' },
+  { id:2, name:'Dr. Rajesh Mehta', specialty:'Diabetologist', exp:'11 yrs', rating:'4.8', patients:640, available:'online', color:'#185fa5', loc:'Hyderabad', fee:'₹700' },
+  { id:3, name:'Dr. Sushma Iyer', specialty:'General Physician', exp:'8 yrs', rating:'4.7', patients:1100, available:'busy', color:'#993556', loc:'Secunderabad', fee:'₹500' },
+  { id:4, name:'Dr. Vikram Rao', specialty:'Neurologist', exp:'16 yrs', rating:'4.9', patients:430, available:'online', color:'#534ab7', loc:'Banjara Hills', fee:'₹1200' },
+  { id:5, name:'Dr. Preethi Nair', specialty:'Nutritionist', exp:'6 yrs', rating:'4.6', patients:780, available:'online', color:'#3b6d11', loc:'Hyderabad', fee:'₹600' },
+  { id:6, name:'Dr. Arjun Das', specialty:'Pulmonologist', exp:'12 yrs', rating:'4.8', patients:560, available:'busy', color:'#993c1d', loc:'Jubilee Hills', fee:'₹900' },
+  { id:7, name:'Dr. Kavitha Reddy', specialty:'Cardiologist', exp:'18 yrs', rating:'5.0', patients:970, available:'online', color:'#085041', loc:'Gachibowli', fee:'₹1000' },
+  { id:8, name:'Dr. Sameer Joshi', specialty:'General Physician', exp:'9 yrs', rating:'4.7', patients:1200, available:'busy', color:'#633806', loc:'Hyderabad', fee:'₹450' },
+];
+
+const timeSlots = ['9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM'];
+
+// ── PAGE ROUTING ──────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('registerError').style.display = 'none';
+}
+
+function switchDashTab(tab, btn) {
+  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const panel = document.getElementById('tab-' + tab);
+  if (panel) panel.classList.add('active');
+  if (tab === 'doctors') renderDoctors();
+  if (tab === 'appointments') renderAppointments();
+  if (tab === 'history') renderHistory();
+  if (tab === 'profile') renderProfile();
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────
+function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginError');
+  if (!email || !pass) { err.textContent = 'Please enter your email and password.'; err.style.display = 'block'; return; }
+
+  // Demo: accept any email/password
+  const firstName = email.split('@')[0];
+  const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+  currentUser = { name: displayName, email, dob: '1990-01-01', gender: 'Not specified' };
+  err.style.display = 'none';
+  afterLogin();
+}
+
+function googleLogin() {
+  currentUser = { name: 'Priya', email: 'priya@gmail.com', dob: '1992-04-15', gender: 'Female' };
+  afterLogin();
+}
+
+function register() {
+  const first = document.getElementById('regFirst').value.trim();
+  const last = document.getElementById('regLast').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const dob = document.getElementById('regDob').value;
+  const gender = document.getElementById('regGender').value;
+  const pass = document.getElementById('regPassword').value;
+  const err = document.getElementById('registerError');
+  if (!first || !last || !email || !dob || !gender || !pass) { err.textContent = 'Please fill in all fields.'; err.style.display = 'block'; return; }
+  if (pass.length < 8) { err.textContent = 'Password must be at least 8 characters.'; err.style.display = 'block'; return; }
+  currentUser = { name: first + ' ' + last, email, dob, gender };
+  err.style.display = 'none';
+  afterLogin();
+}
+
+function afterLogin() {
+  const initials = currentUser.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('navAvatar').textContent = initials;
+  document.getElementById('navUserName').textContent = currentUser.name.split(' ')[0];
+  document.getElementById('navGuest').style.display = 'none';
+  document.getElementById('navUser').style.display = 'flex';
+  document.getElementById('dashName').textContent = currentUser.name.split(' ')[0];
+  showPage('dashboard');
+  showToast('Welcome back, ' + currentUser.name.split(' ')[0] + '! 👋');
+}
+
+function logout() {
+  currentUser = null;
+  appointments = [];
+  healthHistory = [];
+  assessmentCount = 0;
+  document.getElementById('navGuest').style.display = 'flex';
+  document.getElementById('navUser').style.display = 'none';
+  // reset forms
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('riskScore').textContent = '—';
+  document.getElementById('riskTag').textContent = 'Run assessment';
+  document.getElementById('riskBar').style.width = '0';
+  document.getElementById('factorCard').style.display = 'none';
+  document.getElementById('consultCard').style.display = 'none';
+  showPage('landing');
+}
+
+// ── RISK PREDICTION ───────────────────────────────────────────────
+function toggleCheck(el) {
+  el.classList.toggle('checked', el.querySelector('input').checked);
+}
+
+function runPrediction() {
+  const age = parseInt(document.querySelector('input[type=range]').value || 35);
+  const bp = parseInt(document.querySelectorAll('input[type=range]')[1].value || 120);
+  const bmi = parseInt(document.querySelectorAll('input[type=range]')[2].value || 22);
+  const chol = parseInt(document.querySelectorAll('input[type=range]')[3].value || 180);
+  const glucose = parseInt(document.querySelectorAll('input[type=range]')[4].value || 90);
+
+  const checked = [...document.querySelectorAll('input[name=cond]:checked')].map(c => c.value);
+  const exercise = parseInt(document.getElementById('p-exercise').value || 0);
+
+  // Scoring model
+  let score = 0;
+  score += Math.max(0, (age - 30) * 0.5);
+  score += Math.max(0, (bp - 120) * 0.3);
+  score += Math.max(0, (bmi - 24) * 1.2);
+  score += Math.max(0, (chol - 200) * 0.15);
+  score += Math.max(0, (glucose - 100) * 0.25);
+  if (checked.includes('smoking')) score += 15;
+  if (checked.includes('diabetes')) score += 12;
+  if (checked.includes('hypertension')) score += 10;
+  if (checked.includes('family_heart')) score += 8;
+  if (checked.includes('obesity')) score += 8;
+  if (checked.includes('stress')) score += 6;
+  if (checked.includes('sleep')) score += 5;
+  if (checked.includes('alcohol')) score += 7;
+  score -= exercise * 2;
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  let level, color, bgColor, barColor;
+  if (score < 30) {
+    level = 'Low Risk'; color = '#3b6d11'; bgColor = '#eaf3de'; barColor = '#639922';
+  } else if (score < 60) {
+    level = 'Moderate Risk'; color = '#ba7517'; bgColor = '#faeeda'; barColor = '#ef9f27';
+  } else {
+    level = 'High Risk'; color = '#e24b4a'; bgColor = '#fcebeb'; barColor = '#e24b4a';
+  }
+
+  const riskScore = document.getElementById('riskScore');
+  const riskTag = document.getElementById('riskTag');
+  const riskBar = document.getElementById('riskBar');
+
+  riskScore.textContent = score + '/100';
+  riskScore.style.color = color;
+  riskTag.textContent = level;
+  riskTag.style.background = bgColor;
+  riskTag.style.color = color;
+
+  setTimeout(() => {
+    riskBar.style.width = score + '%';
+    riskBar.style.background = barColor;
+  }, 100);
+
+  // Factors
+  const factors = [];
+  if (bp > 130) factors.push({ text: 'Elevated blood pressure (' + bp + ' mmHg)', color: '#e24b4a' });
+  if (bmi > 27) factors.push({ text: 'Above-normal BMI (' + bmi + ')', color: '#ba7517' });
+  if (chol > 200) factors.push({ text: 'High cholesterol (' + chol + ' mg/dL)', color: '#e24b4a' });
+  if (glucose > 100) factors.push({ text: 'Elevated blood glucose (' + glucose + ' mg/dL)', color: '#ba7517' });
+  if (checked.includes('smoking')) factors.push({ text: 'Active smoker — significantly increases risk', color: '#e24b4a' });
+  if (checked.includes('diabetes')) factors.push({ text: 'Diabetes — major cardiovascular risk factor', color: '#e24b4a' });
+  if (checked.includes('family_heart')) factors.push({ text: 'Family history of heart disease', color: '#ba7517' });
+  if (checked.includes('stress')) factors.push({ text: 'Chronic stress raises cortisol levels', color: '#ba7517' });
+  if (exercise >= 3) factors.push({ text: 'Regular exercise — protecting your heart ✓', color: '#3b6d11' });
+  if (factors.length === 0) factors.push({ text: 'Your lifestyle looks healthy — keep it up! ✓', color: '#3b6d11' });
+
+  const factorList = document.getElementById('factorList');
+  factorList.innerHTML = factors.map(f => `<li class="factor-item"><div class="factor-dot" style="background:${f.color}"></div>${f.text}</li>`).join('');
+
+  document.getElementById('factorCard').style.display = 'block';
+  document.getElementById('consultCard').style.display = score >= 30 ? 'block' : 'none';
+
+  // Save to history
+  assessmentCount++;
+  healthHistory.push({ date: new Date().toLocaleDateString('en-IN'), score, level, bmi, bp, chol });
+  document.getElementById('detailAssessments').textContent = assessmentCount;
+  showToast('Assessment complete! Risk score: ' + score + '/100');
+}
+
+// ── DOCTORS ───────────────────────────────────────────────────────
+function renderDoctors() {
+  const search = (document.getElementById('doctorSearch').value || '').toLowerCase();
+  const spec = document.getElementById('specialtyFilter').value;
+  const avail = document.getElementById('availFilter').value;
+
+  const filtered = doctors.filter(d => {
+    const matchSearch = !search || d.name.toLowerCase().includes(search) || d.specialty.toLowerCase().includes(search);
+    const matchSpec = !spec || d.specialty === spec;
+    const matchAvail = !avail || d.available === avail;
+    return matchSearch && matchSpec && matchAvail;
+  });
+
+  const grid = document.getElementById('doctorsGrid');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🔍</div><h3>No doctors found</h3><p>Try adjusting your search or filters.</p></div>';
+    return;
+  }
+
+  const initials = name => name.replace('Dr. ', '').split(' ').map(n => n[0]).join('').substring(0,2);
+  const stars = r => '★'.repeat(Math.round(parseFloat(r))) + '☆'.repeat(5 - Math.round(parseFloat(r)));
+
+  grid.innerHTML = filtered.map(d => `
+    <div class="doctor-card">
+      <span class="available-badge ${d.available}">${d.available === 'online' ? '● Available' : '● Busy'}</span>
+      <div class="doctor-top">
+        <div class="doctor-avatar" style="background:${d.color};">${initials(d.name)}</div>
+        <div class="doctor-info">
+          <h3>${d.name}</h3>
+          <span class="specialty">${d.specialty}</span>
+        </div>
+      </div>
+      <div class="doctor-meta">
+        <span class="meta-chip">📍 ${d.loc}</span>
+        <span class="meta-chip">🕒 ${d.exp} exp.</span>
+        <span class="meta-chip"><span class="stars">${stars(d.rating)}</span> ${d.rating}</span>
+        <span class="meta-chip">💰 ${d.fee}/visit</span>
+      </div>
+      <div class="doctor-actions">
+        <button class="book-btn" onclick="openBooking(${d.id})">📅 Book</button>
+        <button class="msg-btn" onclick="messageDoctor('${d.name}')">💬 Message</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterDoctors() { renderDoctors(); }
+
+// ── BOOKING ───────────────────────────────────────────────────────
+function openBooking(doctorId) {
+  selectedDoctor = doctors.find(d => d.id === doctorId);
+  selectedTime = null;
+  document.getElementById('modalDoctorName').textContent = 'with ' + selectedDoctor.name + ' · ' + selectedDoctor.specialty;
+
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+  document.getElementById('bookDate').min = dateStr;
+  document.getElementById('bookDate').value = dateStr;
+  document.getElementById('visitReason').value = '';
+
+  const slotsEl = document.getElementById('timeSlots');
+  slotsEl.innerHTML = timeSlots.map(t => `<button class="time-slot" onclick="selectTime(this, '${t}')">${t}</button>`).join('');
+
+  document.getElementById('bookingModal').classList.add('open');
+}
+
+function selectTime(el, time) {
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTime = time;
+}
+
+function closeModal() {
+  document.getElementById('bookingModal').classList.remove('open');
+  selectedDoctor = null;
+  selectedTime = null;
+}
+
+function confirmBooking() {
+  if (!selectedTime) { showToast('⚠️ Please select a time slot.'); return; }
+  const date = document.getElementById('bookDate').value;
+  if (!date) { showToast('⚠️ Please select a date.'); return; }
+  const reason = document.getElementById('visitReason').value || 'General consultation';
+  const type = document.getElementById('consultType').value;
+
+  const d = new Date(date);
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  appointments.push({
+    doctor: selectedDoctor.name,
+    specialty: selectedDoctor.specialty,
+    date: date,
+    month: monthNames[d.getMonth()],
+    day: d.getDate(),
+    time: selectedTime,
+    type: type === 'video' ? '📹 Video call' : '🏥 In-person',
+    reason,
+    status: 'upcoming'
+  });
+
+  document.getElementById('detailAppts').textContent = appointments.length;
+  closeModal();
+  showToast('✅ Appointment booked with ' + selectedDoctor.name + ' on ' + date + ' at ' + selectedTime);
+}
+
+function messageDoctor(name) {
+  showToast('💬 Messaging ' + name + ' — feature coming soon!');
+}
+
+// ── APPOINTMENTS ─────────────────────────────────────────────────
+function renderAppointments() {
+  const container = document.getElementById('appointmentsContainer');
+  if (appointments.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><h3>No appointments yet</h3><p>Book a consultation with a doctor to see it here.</p><button class="cta-btn primary" style="margin-top:1rem;" onclick="switchDashTab(\'doctors\', document.querySelector(\'.dash-tab:nth-child(2)\'))">Find a Doctor →</button></div>';
+    return;
+  }
+  container.innerHTML = '<div class="appointments-list">' + appointments.map(a => `
+    <div class="appt-card">
+      <div class="appt-date">
+        <div class="month">${a.month}</div>
+        <div class="day">${a.day}</div>
+      </div>
+      <div class="appt-info">
+        <h4>${a.doctor}</h4>
+        <p>${a.specialty} · ${a.time} · ${a.type}</p>
+        <p style="color:var(--text-soft);font-size:12px;margin-top:3px;">${a.reason}</p>
+      </div>
+      <span class="appt-status status-${a.status}">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
+    </div>
+  `).join('') + '</div>';
+}
+
+// ── HISTORY ───────────────────────────────────────────────────────
+function renderHistory() {
+  const container = document.getElementById('historyContainer');
+  if (healthHistory.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><h3>No health records yet</h3><p>Complete a risk assessment to start tracking your health over time.</p></div>';
+    return;
+  }
+  container.innerHTML = `<div class="history-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Risk Score</th>
+          <th>Level</th>
+          <th>BMI</th>
+          <th>Blood Pressure</th>
+          <th>Cholesterol</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${healthHistory.map(h => `
+          <tr>
+            <td>${h.date}</td>
+            <td><strong>${h.score}/100</strong></td>
+            <td><span class="appt-status ${h.score<30?'status-completed':h.score<60?'status-upcoming':'status-cancelled'}">${h.level}</span></td>
+            <td>${h.bmi}</td>
+            <td>${h.bp} mmHg</td>
+            <td>${h.chol} mg/dL</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ── PROFILE ───────────────────────────────────────────────────────
+function renderProfile() {
+  if (!currentUser) return;
+  const initials = currentUser.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('profileAvatar').textContent = initials;
+  document.getElementById('profileName').textContent = currentUser.name;
+  document.getElementById('profileEmail').textContent = currentUser.email;
+  document.getElementById('detailName').textContent = currentUser.name;
+  document.getElementById('detailEmail').textContent = currentUser.email;
+  document.getElementById('detailDob').textContent = currentUser.dob || '—';
+  document.getElementById('detailGender').textContent = currentUser.gender || '—';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+// Set default booking date
+const today = new Date().toISOString().split('T')[0];
+const bookDateEl = document.getElementById('bookDate');
+if (bookDateEl) bookDateEl.min = today;
+
+// Close modal on overlay click
+document.getElementById('bookingModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
